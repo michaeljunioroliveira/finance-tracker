@@ -4,13 +4,18 @@ const API = "http://localhost:5054/api/transaction";
 
 function App() {
   const [transactions, setTransactions] = useState([]);
-  const [summary, setSummary] = useState({ income: 0, expense: 0, balance: 0 });
+
+  const [summary, setSummary] = useState({
+    income: 0,
+    expense: 0,
+    balance: 0,
+  });
+
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("Income");
   const [category, setCategory] = useState("");
 
-  // Carrega as transactions ao abrir
   useEffect(() => {
     loadTransactions();
     loadSummary();
@@ -36,7 +41,9 @@ function App() {
 
     await fetch(API, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         description,
         amount: parseFloat(amount),
@@ -45,146 +52,448 @@ function App() {
       }),
     });
 
-    // Limpa o formulário e recarrega
     setDescription("");
     setAmount("");
     setCategory("");
+
     loadTransactions();
     loadSummary();
   }
 
   async function deleteTransaction(id) {
-    if (!confirm("Deletar essa transação?")) return;
-    await fetch(`${API}/${id}`, { method: "DELETE" });
+    if (!window.confirm("Deseja deletar essa transação?")) return;
+
+    await fetch(`${API}/${id}`, {
+      method: "DELETE",
+    });
+
     loadTransactions();
     loadSummary();
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: "2rem", fontFamily: "Arial" }}>
-      <h1 style={{ textAlign: "center" }}>💰 Finance Tracker</h1>
+    <div style={styles.app}>
+      {/* SIDEBAR */}
+      <aside style={styles.sidebar}>
+        <div>
+          <h2 style={styles.logo}>Finance Pro</h2>
 
-      {/* Resumo */}
-      <div style={{ display: "flex", gap: 12, marginBottom: "2rem" }}>
-        <div style={cardStyle("#d1e7dd")}>
-          <p style={labelStyle}>Receitas</p>
-          <p style={valueStyle}>R$ {summary.income.toFixed(2)}</p>
-        </div>
-        <div style={cardStyle("#f8d7da")}>
-          <p style={labelStyle}>Despesas</p>
-          <p style={valueStyle}>R$ {summary.expense.toFixed(2)}</p>
-        </div>
-        <div style={cardStyle("#cfe2ff")}>
-          <p style={labelStyle}>Saldo</p>
-          <p style={valueStyle}>R$ {summary.balance.toFixed(2)}</p>
-        </div>
-      </div>
+          <div style={styles.menuItemActive}>
+            <span>Dashboard</span>
+          </div>
 
-      {/* Formulário */}
-      <div style={{ background: "#f8f9fa", borderRadius: 8, padding: "1.5rem", marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: 16, marginBottom: 12 }}>Nova Transação</h2>
-        <input
-          placeholder="Descrição"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          placeholder="Valor"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          placeholder="Categoria"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={inputStyle}
-        />
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          style={inputStyle}
-        >
-          <option value="Income">Receita</option>
-          <option value="Expense">Despesa</option>
-        </select>
-        <button onClick={createTransaction} style={btnStyle}>
-          + Adicionar
-        </button>
-      </div>
+          <div style={styles.menuItem}>
+            <span>Transações</span>
 
-      {/* Lista */}
-      <h2 style={{ fontSize: 16, marginBottom: 12 }}>Transações</h2>
-      {transactions.length === 0 && (
-        <p style={{ color: "#999", textAlign: "center" }}>Nenhuma transação ainda.</p>
-      )}
-      {transactions.map((t) => (
-        <div key={t.id} style={{
-          background: "white",
-          border: "1px solid #dee2e6",
-          borderRadius: 8,
-          padding: "12px 16px",
-          marginBottom: 8,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          <div>
-            <p style={{ margin: 0, fontWeight: "bold" }}>{t.description}</p>
-            <p style={{ margin: 0, fontSize: 12, color: "#666" }}>{t.category}</p>
-            <span style={{
-              fontSize: 11,
-              padding: "2px 8px",
-              borderRadius: 20,
-              background: t.type === "Income" ? "#d1e7dd" : "#f8d7da",
-              color: t.type === "Income" ? "#0f5132" : "#842029"
-            }}>
-              {t.type === "Income" ? "Receita" : "Despesa"}
+            <span style={styles.comingSoonBadge}>
+              Em breve
             </span>
           </div>
-          <div style={{ textAlign: "right" }}>
-            <p style={{
-              margin: 0,
-              fontWeight: "bold",
-              color: t.type === "Income" ? "#198754" : "#dc3545"
-            }}>
-              {t.type === "Income" ? "+" : "-"} R$ {t.amount.toFixed(2)}
-            </p>
-            <button onClick={() => deleteTransaction(t.id)} style={{
-              background: "none",
-              border: "none",
-              color: "#dc3545",
-              cursor: "pointer",
-              fontSize: 12,
-              marginTop: 4
-            }}>
-              Deletar
-            </button>
+
+          <div style={styles.menuItem}>
+            <span>Relatórios</span>
+
+            <span style={styles.comingSoonBadge}>
+              Preview
+            </span>
+          </div>
+
+          <div style={styles.menuItem}>
+            <span>Categorias</span>
+
+            <span style={styles.comingSoonBadge}>
+              Beta
+            </span>
           </div>
         </div>
-      ))}
+
+        <div style={styles.summaryContainer}>
+          <div style={styles.summaryBox}>
+            <span style={styles.summaryLabel}>Receitas</span>
+
+            <strong style={{ color: "#4ADE80" }}>
+              R$ {summary.income.toFixed(2)}
+            </strong>
+          </div>
+
+          <div style={styles.summaryBox}>
+            <span style={styles.summaryLabel}>Despesas</span>
+
+            <strong style={{ color: "#F87171" }}>
+              R$ {summary.expense.toFixed(2)}
+            </strong>
+          </div>
+
+          <div style={styles.summaryBox}>
+            <span style={styles.summaryLabel}>Saldo</span>
+
+            <strong style={{ color: "#60A5FA" }}>
+              R$ {summary.balance.toFixed(2)}
+            </strong>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN */}
+      <main style={styles.main}>
+        {/* HEADER */}
+        <div style={styles.header}>
+          <div>
+            <h1 style={styles.title}>
+              Controle Financeiro
+            </h1>
+
+            <p style={styles.subtitle}>
+              Gerencie receitas e despesas do sistema
+            </p>
+          </div>
+
+          <button
+            style={styles.addButton}
+            onClick={createTransaction}
+          >
+            + Nova Transação
+          </button>
+        </div>
+
+        {/* FORM */}
+        <div style={styles.formContainer}>
+          <input
+            placeholder="Descrição"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            style={styles.input}
+          />
+
+          <input
+            type="number"
+            placeholder="Valor"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            style={styles.input}
+          />
+
+          <input
+            placeholder="Categoria"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={styles.input}
+          />
+
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            style={styles.input}
+          >
+            <option value="Income">Receita</option>
+
+            <option value="Expense">Despesa</option>
+          </select>
+        </div>
+
+        {/* TABLE */}
+        <div style={styles.tableContainer}>
+          <div style={styles.tableHeader}>
+            <h2 style={styles.tableTitle}>
+              Transações
+            </h2>
+          </div>
+
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Descrição</th>
+                <th style={styles.th}>Categoria</th>
+                <th style={styles.th}>Tipo</th>
+                <th style={styles.th}>Valor</th>
+                <th style={styles.th}>Ações</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {transactions.map((t) => (
+                <tr key={t.id} style={styles.tr}>
+                  <td style={styles.td}>
+                    <div style={styles.descriptionCell}>
+                      {t.description}
+                    </div>
+                  </td>
+
+                  <td style={styles.td}>
+                    {t.category}
+                  </td>
+
+                  <td style={styles.td}>
+                    <span
+                      style={{
+                        ...styles.badge,
+                        background:
+                          t.type === "Income"
+                            ? "#DCFCE7"
+                            : "#FEE2E2",
+
+                        color:
+                          t.type === "Income"
+                            ? "#166534"
+                            : "#991B1B",
+                      }}
+                    >
+                      {t.type === "Income"
+                        ? "Receita"
+                        : "Despesa"}
+                    </span>
+                  </td>
+
+                  <td
+                    style={{
+                      ...styles.td,
+                      fontWeight: "bold",
+
+                      color:
+                        t.type === "Income"
+                          ? "#16A34A"
+                          : "#DC2626",
+                    }}
+                  >
+                    {t.type === "Income"
+                      ? "+"
+                      : "-"}{" "}
+                    R$ {t.amount.toFixed(2)}
+                  </td>
+
+                  <td style={styles.td}>
+                    <button
+                      style={styles.deleteBtn}
+                      onClick={() =>
+                        deleteTransaction(t.id)
+                      }
+                    >
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {transactions.length === 0 && (
+            <div style={styles.empty}>
+              Nenhuma transação cadastrada
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
 
-const cardStyle = (bg) => ({
-  flex: 1, background: bg, borderRadius: 8,
-  padding: "12px", textAlign: "center"
-});
-const labelStyle = { margin: 0, fontSize: 12, color: "#555" };
-const valueStyle = { margin: 0, fontWeight: "bold", fontSize: 18 };
-const inputStyle = {
-  width: "100%", padding: "8px", marginBottom: 8,
-  border: "1px solid #dee2e6", borderRadius: 6,
-  boxSizing: "border-box", fontSize: 14
-};
-const btnStyle = {
-  width: "100%", padding: "10px",
-  background: "#0d6efd", color: "white",
-  border: "none", borderRadius: 6,
-  cursor: "pointer", fontWeight: "bold"
+const styles = {
+  app: {
+    display: "flex",
+    width: "100%",
+    minHeight: "100vh",
+    background: "#F1F5F9",
+    fontFamily: "Segoe UI, sans-serif",
+  },
+
+  sidebar: {
+    width: 280,
+    background: "#0F172A",
+    color: "white",
+    padding: 24,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+
+  logo: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 40,
+  },
+
+  menuItem: {
+    padding: "14px 16px",
+    borderRadius: 10,
+    marginBottom: 10,
+    color: "#CBD5E1",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    cursor: "not-allowed",
+    opacity: 0.85,
+    background: "#162033",
+  },
+
+  menuItemActive: {
+    padding: "14px 16px",
+    borderRadius: 10,
+    marginBottom: 10,
+    background: "#1E293B",
+    color: "white",
+    fontWeight: "bold",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  comingSoonBadge: {
+    background: "#334155",
+    color: "#94A3B8",
+    fontSize: 10,
+    padding: "4px 8px",
+    borderRadius: 999,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+
+  summaryContainer: {
+    marginTop: 30,
+  },
+
+  summaryBox: {
+    background: "#1E293B",
+    padding: 18,
+    borderRadius: 12,
+    marginBottom: 14,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  summaryLabel: {
+    color: "#CBD5E1",
+    fontSize: 14,
+  },
+
+  main: {
+    flex: 1,
+    width: "100%",
+    padding: 32,
+    minHeight: "100vh",
+  },
+
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 28,
+  },
+
+  title: {
+    margin: 0,
+    fontSize: 38,
+    color: "#0F172A",
+  },
+
+  subtitle: {
+    marginTop: 6,
+    color: "#64748B",
+    fontSize: 15,
+  },
+
+  addButton: {
+    background: "#2563EB",
+    color: "white",
+    border: "none",
+    padding: "14px 22px",
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: 14,
+    boxShadow: "0 4px 10px rgba(37,99,235,0.2)",
+  },
+
+  formContainer: {
+    background: "white",
+    padding: 22,
+    borderRadius: 18,
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: 14,
+    marginBottom: 28,
+    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+  },
+
+  input: {
+    padding: 14,
+    borderRadius: 12,
+    border: "1px solid #CBD5E1",
+    fontSize: 14,
+    outline: "none",
+    background: "#F8FAFC",
+  },
+
+  tableContainer: {
+    width: "100%",
+    background: "white",
+    borderRadius: 18,
+    overflow: "hidden",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+  },
+
+  tableHeader: {
+    padding: 20,
+    borderBottom: "1px solid #E2E8F0",
+  },
+
+  tableTitle: {
+    margin: 0,
+    fontSize: 20,
+    color: "#0F172A",
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+  },
+
+  th: {
+    background: "#F8FAFC",
+    padding: 18,
+    textAlign: "left",
+    fontSize: 14,
+    color: "#475569",
+    borderBottom: "1px solid #E2E8F0",
+  },
+
+  tr: {
+    borderBottom: "1px solid #E2E8F0",
+  },
+
+  td: {
+    padding: 18,
+    fontSize: 14,
+    color: "#334155",
+  },
+
+  descriptionCell: {
+    fontWeight: 600,
+  },
+
+  badge: {
+    padding: "6px 12px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+
+  deleteBtn: {
+    background: "#EF4444",
+    color: "white",
+    border: "none",
+    padding: "10px 14px",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
+  empty: {
+    padding: 40,
+    textAlign: "center",
+    color: "#64748B",
+  },
 };
 
 export default App;
